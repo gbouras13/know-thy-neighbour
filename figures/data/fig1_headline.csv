@@ -1,0 +1,31 @@
+method,family,benchmark,tpr,lo,hi,auroc
+sequence (MMseqs2),sequence,Test 2 (SCOPe),49.41,NA,NA,0.9704
+sequence (MMseqs2),sequence,Test 1 (Swiss-Prot),84.9,82.8,87.1,NA
+ProstT5-Foldseek,structure,Test 2 (SCOPe),55.5,NA,NA,0.9321
+ProstT5-Foldseek,structure,Test 1 (Swiss-Prot),77.4,76.6,78.4,NA
+Foldseek,structure,Test 2 (SCOPe),45.42,NA,NA,0.9346
+Foldseek,structure,Test 1 (Swiss-Prot),78.6,77.4,79.6,NA
+ESM-2 150M kNN,embedding,Test 2 (SCOPe),1.63,NA,NA,0.6416
+ESM-2 150M kNN,embedding,Test 1 (Swiss-Prot),1.4,1.1,1.8,NA
+ESM-2 650M kNN,embedding,Test 2 (SCOPe),0.49,NA,NA,0.6536
+ESM-2 650M kNN,embedding,Test 1 (Swiss-Prot),2.4,2.0,2.8,NA
+ESM-2 3B kNN,embedding,Test 2 (SCOPe),0.77,NA,NA,0.6719
+ESM-2 3B kNN,embedding,Test 1 (Swiss-Prot),2.3,1.9,2.7,NA
+ESM-C 300M kNN,embedding,Test 2 (SCOPe),0.23,NA,NA,0.6224
+ESM-C 300M kNN,embedding,Test 1 (Swiss-Prot),0.4,0.3,0.5,NA
+ESM-C 600M kNN,embedding,Test 2 (SCOPe),0.17,NA,NA,0.5739
+ESM-C 600M kNN,embedding,Test 1 (Swiss-Prot),0.4,0.3,0.5,NA
+ESM-C 6B kNN,embedding,Test 2 (SCOPe),0.31,NA,NA,0.5409
+ESM-C 6B kNN,embedding,Test 1 (Swiss-Prot),0.3,0.2,0.4,NA
+Ankh-base kNN,embedding,Test 2 (SCOPe),14.56,NA,NA,0.7982
+Ankh-base kNN,embedding,Test 1 (Swiss-Prot),6.7,6.1,7.5,NA
+Ankh-large kNN,embedding,Test 2 (SCOPe),4.31,NA,NA,0.7959
+Ankh-large kNN,embedding,Test 1 (Swiss-Prot),4.3,3.4,5.2,NA
+ProtT5 kNN,embedding,Test 2 (SCOPe),23.27,NA,NA,0.8398
+ProtT5 kNN,embedding,Test 1 (Swiss-Prot),13.3,12.1,14.3,NA
+ProstT5 kNN,embedding,Test 2 (SCOPe),44.73,NA,NA,0.9008
+ProstT5 kNN,embedding,Test 1 (Swiss-Prot),15.4,9.6,18.6,NA
+gLM2-embed,embedding,Test 2 (SCOPe),46.9,NA,NA,0.8843
+gLM2-embed,embedding,Test 1 (Swiss-Prot),36.6,35.1,38.0,NA
+ProtTucker/EAT,embedding,Test 2 (SCOPe),58.78,NA,NA,0.9412
+ProtTucker/EAT,embedding,Test 1 (Swiss-Prot),47.1,41.8,51.3,NA

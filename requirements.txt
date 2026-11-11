@@ -1,0 +1,10 @@
+# Python >= 3.10. Analysis scripts need numpy only; embedding scripts need the rest.
+numpy>=1.24,<2
+torch>=2.1
+transformers>=4.40
+sentencepiece
+protobuf
+huggingface_hub
+safetensors
+# ESM-C 300M/600M/6B need the Biohub transformers fork, installed separately:
+#   pip install "transformers @ git+https://github.com/Biohub/transformers.git@main"

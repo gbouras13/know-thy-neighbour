@@ -1,0 +1,59 @@
+model,transform,benchmark,delivered,top1
+sequence (MMseqs2),none,Test 2 (SCOPe),49.41,56.92
+ProstT5-Foldseek,none,Test 2 (SCOPe),55.5,89.18
+Foldseek,none,Test 2 (SCOPe),45.42,80.1
+ESM-2 150M,none,Test 2 (SCOPe),1.63,58.24
+ESM-2 150M,center,Test 2 (SCOPe),1.74,56.67
+ESM-2 150M,diag,Test 2 (SCOPe),2.34,61.03
+ESM-2 150M,abtt,Test 2 (SCOPe),10.76,67.17
+ESM-2 150M,whiten,Test 2 (SCOPe),34.23,85.41
+ESM-2 650M,none,Test 2 (SCOPe),0.49,59.04
+ESM-2 650M,center,Test 2 (SCOPe),0.23,57.61
+ESM-2 650M,diag,Test 2 (SCOPe),2.88,64.12
+ESM-2 650M,abtt,Test 2 (SCOPe),17.1,78.53
+ESM-2 650M,whiten,Test 2 (SCOPe),34.66,88.41
+ESM-2 3B,none,Test 2 (SCOPe),0.77,66.94
+ESM-2 3B,center,Test 2 (SCOPe),0.14,65.49
+ESM-2 3B,diag,Test 2 (SCOPe),1.51,74.88
+ESM-2 3B,abtt,Test 2 (SCOPe),34.43,88.18
+ESM-2 3B,whiten,Test 2 (SCOPe),28.23,88.61
+ESM-C 300M,none,Test 2 (SCOPe),0.23,27.01
+ESM-C 300M,center,Test 2 (SCOPe),0.17,27.83
+ESM-C 300M,diag,Test 2 (SCOPe),0.69,36.05
+ESM-C 300M,abtt,Test 2 (SCOPe),1.97,42.82
+ESM-C 300M,whiten,Test 2 (SCOPe),19.47,77.5
+ESM-C 600M,none,Test 2 (SCOPe),0.17,23.15
+ESM-C 600M,center,Test 2 (SCOPe),0.2,24.64
+ESM-C 600M,diag,Test 2 (SCOPe),0.37,32.57
+ESM-C 600M,abtt,Test 2 (SCOPe),0.69,38.11
+ESM-C 600M,whiten,Test 2 (SCOPe),9.36,72.91
+ESM-C 6B,none,Test 2 (SCOPe),0.31,18.21
+ESM-C 6B,center,Test 2 (SCOPe),0.31,19.35
+ESM-C 6B,diag,Test 2 (SCOPe),0.29,22.98
+ESM-C 6B,abtt,Test 2 (SCOPe),0.4,32.32
+ESM-C 6B,whiten,Test 2 (SCOPe),6.62,65.52
+Ankh-base,none,Test 2 (SCOPe),14.56,83.33
+Ankh-base,center,Test 2 (SCOPe),21.61,84.24
+Ankh-base,diag,Test 2 (SCOPe),37.51,86.47
+Ankh-base,abtt,Test 2 (SCOPe),51.24,86.44
+Ankh-base,whiten,Test 2 (SCOPe),46.65,87.04
+Ankh-large,none,Test 2 (SCOPe),4.31,80.47
+Ankh-large,center,Test 2 (SCOPe),4.05,80.84
+Ankh-large,diag,Test 2 (SCOPe),11.22,82.76
+Ankh-large,abtt,Test 2 (SCOPe),33.71,84.78
+Ankh-large,whiten,Test 2 (SCOPe),41.14,86.58
+ProtT5,none,Test 2 (SCOPe),23.27,70.34
+ProtT5,center,Test 2 (SCOPe),17.64,70.45
+ProtT5,diag,Test 2 (SCOPe),19.93,70.85
+ProtT5,abtt,Test 2 (SCOPe),20.53,76.73
+ProtT5,whiten,Test 2 (SCOPe),30.32,85.3
+ProstT5,none,Test 2 (SCOPe),44.73,79.45
+ProstT5,center,Test 2 (SCOPe),15.87,79.5
+ProstT5,diag,Test 2 (SCOPe),20.9,80.1
+ProstT5,abtt,Test 2 (SCOPe),46.5,86.15
+ProstT5,whiten,Test 2 (SCOPe),47.73,88.81
+gLM2-embed,none,Test 2 (SCOPe),46.9,78.25
+gLM2-embed,center,Test 2 (SCOPe),38.91,78.02
+gLM2-embed,diag,Test 2 (SCOPe),40.05,78.05
+gLM2-embed,abtt,Test 2 (SCOPe),49.36,79.16
+gLM2-embed,whiten,Test 2 (SCOPe),51.5,78.48

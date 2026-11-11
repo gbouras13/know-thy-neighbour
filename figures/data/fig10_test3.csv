@@ -1,0 +1,79 @@
+method,arm,level,mean_sens
+Ankh-base,embedding,family,0.73226
+Ankh-base,embedding,superfamily,0.45587
+Ankh-base,embedding,fold,0.04052
+Ankh-base +whiten,embedding +wh,family,0.75241
+Ankh-base +whiten,embedding +wh,superfamily,0.46506
+Ankh-base +whiten,embedding +wh,fold,0.03195
+Ankh-large,embedding,family,0.64957
+Ankh-large,embedding,superfamily,0.34978
+Ankh-large,embedding,fold,0.02205
+Ankh-large +whiten,embedding +wh,family,0.6799
+Ankh-large +whiten,embedding +wh,superfamily,0.37084
+Ankh-large +whiten,embedding +wh,fold,0.01744
+ESM-2 150M,embedding,family,0.31288
+ESM-2 150M,embedding,superfamily,0.14244
+ESM-2 150M,embedding,fold,0.00853
+ESM-2 150M +whiten,embedding +wh,family,0.69181
+ESM-2 150M +whiten,embedding +wh,superfamily,0.41319
+ESM-2 150M +whiten,embedding +wh,fold,0.03064
+ESM-2 3B,embedding,family,0.41038
+ESM-2 3B,embedding,superfamily,0.18629
+ESM-2 3B,embedding,fold,0.01003
+ESM-2 3B +whiten,embedding +wh,family,0.63113
+ESM-2 3B +whiten,embedding +wh,superfamily,0.3189
+ESM-2 3B +whiten,embedding +wh,fold,0.01522
+ESM-2 650M,embedding,family,0.32288
+ESM-2 650M,embedding,superfamily,0.13982
+ESM-2 650M,embedding,fold,0.00726
+ESM-2 650M +whiten,embedding +wh,family,0.69078
+ESM-2 650M +whiten,embedding +wh,superfamily,0.38493
+ESM-2 650M +whiten,embedding +wh,fold,0.02423
+ESM-C 300M,embedding,family,0.10673
+ESM-C 300M,embedding,superfamily,0.03739
+ESM-C 300M,embedding,fold,0.00355
+ESM-C 300M +whiten,embedding +wh,family,0.54173
+ESM-C 300M +whiten,embedding +wh,superfamily,0.24835
+ESM-C 300M +whiten,embedding +wh,fold,0.01295
+ESM-C 600M,embedding,family,0.09584
+ESM-C 600M,embedding,superfamily,0.0313
+ESM-C 600M,embedding,fold,0.00357
+ESM-C 600M +whiten,embedding +wh,family,0.50389
+ESM-C 600M +whiten,embedding +wh,superfamily,0.21792
+ESM-C 600M +whiten,embedding +wh,fold,0.00954
+ESM-C 6B,embedding,family,0.0826
+ESM-C 6B,embedding,superfamily,0.02648
+ESM-C 6B,embedding,fold,0.00344
+ESM-C 6B +whiten,embedding +wh,family,0.42128
+ESM-C 6B +whiten,embedding +wh,superfamily,0.15337
+ESM-C 6B +whiten,embedding +wh,fold,0.0051
+Foldseek,structure,family,0.82978
+Foldseek,structure,superfamily,0.57486
+Foldseek,structure,fold,0.11186
+ProstT5,embedding,family,0.64991
+ProstT5,embedding,superfamily,0.35517
+ProstT5,embedding,fold,0.03332
+ProstT5 +whiten,embedding +wh,family,0.73486
+ProstT5 +whiten,embedding +wh,superfamily,0.42114
+ProstT5 +whiten,embedding +wh,fold,0.02566
+ProstT5-Foldseek,structure,family,0.82495
+ProstT5-Foldseek,structure,superfamily,0.57023
+ProstT5-Foldseek,structure,fold,0.0921
+ProtT5,embedding,family,0.49275
+ProtT5,embedding,superfamily,0.22549
+ProtT5,embedding,fold,0.01217
+ProtT5 +whiten,embedding +wh,family,0.66425
+ProtT5 +whiten,embedding +wh,superfamily,0.34722
+ProtT5 +whiten,embedding +wh,fold,0.01566
+ProtTucker/EAT,embedding,family,0.82127
+ProtTucker/EAT,embedding,superfamily,0.55709
+ProtTucker/EAT,embedding,fold,0.08994
+gLM2-embed,embedding,family,0.66707
+gLM2-embed,embedding,superfamily,0.39366
+gLM2-embed,embedding,fold,0.02625
+gLM2-embed +whiten,embedding +wh,family,0.62915
+gLM2-embed +whiten,embedding +wh,superfamily,0.35537
+gLM2-embed +whiten,embedding +wh,fold,0.01543
+sequence (MMseqs2),sequence,family,0.34123
+sequence (MMseqs2),sequence,superfamily,0.13249
+sequence (MMseqs2),sequence,fold,0.00066

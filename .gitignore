@@ -1,0 +1,12 @@
+# large inputs and intermediate outputs live on Zenodo, not in git
+/data/
+/results/
+/logs/
+figures/out/
+/tools/*.pt
+__pycache__/
+*.pyc
+.DS_Store
+.Rhistory
+.RData
+*.Rproj.user/

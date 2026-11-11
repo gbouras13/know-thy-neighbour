@@ -1,0 +1,60 @@
+method,transform,family,params_m,top1,delivered,kept,auroc,n_pos,n_fold,n_scored
+sequence (MMseqs2),none,sequence,NA,56.92,49.41,86.8,0.9704,1994,1480,3500
+ProstT5-Foldseek,none,structure,NA,89.18,55.5,62.2,0.9321,3124,244,3502
+Foldseek,none,structure,NA,80.1,45.42,56.7,0.9346,2806,283,3222
+ESM-2 150M kNN,none,embedding,150,58.24,1.63,2.8,0.6416,2040,1319,3503
+ESM-2 150M kNN,center,embedding,150,56.67,1.74,3.1,0.6532,1985,1374,3503
+ESM-2 150M kNN,diag,embedding,150,61.03,2.34,3.8,0.6845,2138,1217,3503
+ESM-2 150M kNN,abtt,embedding,150,67.17,10.76,16.0,0.7825,2353,997,3503
+ESM-2 150M kNN,whiten,embedding,150,85.41,34.23,40.1,0.8383,2992,409,3503
+ESM-2 650M kNN,none,embedding,650,59.04,0.49,0.8,0.6536,2068,1288,3503
+ESM-2 650M kNN,center,embedding,650,57.61,0.23,0.4,0.6176,2018,1341,3503
+ESM-2 650M kNN,diag,embedding,650,64.12,2.88,4.5,0.6857,2246,1097,3503
+ESM-2 650M kNN,abtt,embedding,650,78.53,17.1,21.8,0.803,2751,628,3503
+ESM-2 650M kNN,whiten,embedding,650,88.41,34.66,39.2,0.8498,3097,302,3503
+ESM-2 3B kNN,none,embedding,3000,66.94,0.77,1.2,0.6719,2345,1042,3503
+ESM-2 3B kNN,center,embedding,3000,65.49,0.14,0.2,0.604,2294,1076,3503
+ESM-2 3B kNN,diag,embedding,3000,74.88,1.51,2.0,0.6931,2623,757,3503
+ESM-2 3B kNN,abtt,embedding,3000,88.18,34.43,39.0,0.8403,3089,320,3503
+ESM-2 3B kNN,whiten,embedding,3000,88.61,28.23,31.9,0.8362,3104,299,3503
+ESM-C 300M kNN,none,embedding,300,27.01,0.23,0.8,0.6224,946,2432,3503
+ESM-C 300M kNN,center,embedding,300,27.83,0.17,0.6,0.5282,975,2400,3503
+ESM-C 300M kNN,diag,embedding,300,36.05,0.69,1.9,0.6146,1263,2127,3503
+ESM-C 300M kNN,abtt,embedding,300,42.82,1.97,4.6,0.7128,1500,1889,3503
+ESM-C 300M kNN,whiten,embedding,300,77.5,19.47,25.1,0.8325,2715,698,3503
+ESM-C 600M kNN,none,embedding,600,23.15,0.17,0.7,0.5739,811,2554,3503
+ESM-C 600M kNN,center,embedding,600,24.64,0.2,0.8,0.5411,863,2504,3503
+ESM-C 600M kNN,diag,embedding,600,32.57,0.37,1.1,0.5997,1141,2240,3503
+ESM-C 600M kNN,abtt,embedding,600,38.11,0.69,1.8,0.6905,1335,2061,3503
+ESM-C 600M kNN,whiten,embedding,600,72.91,9.36,12.8,0.8023,2554,849,3503
+ESM-C 6B kNN,none,embedding,6000,18.21,0.31,1.7,0.5409,638,2726,3503
+ESM-C 6B kNN,center,embedding,6000,19.35,0.31,1.6,0.5126,678,2694,3503
+ESM-C 6B kNN,diag,embedding,6000,22.98,0.29,1.2,0.5202,805,2572,3503
+ESM-C 6B kNN,abtt,embedding,6000,32.32,0.4,1.2,0.593,1132,2258,3503
+ESM-C 6B kNN,whiten,embedding,6000,65.52,6.62,10.1,0.7613,2295,1130,3503
+Ankh-base kNN,none,embedding,450,83.33,14.56,17.5,0.7982,2919,499,3503
+Ankh-base kNN,center,embedding,450,84.24,21.61,25.7,0.7826,2951,460,3503
+Ankh-base kNN,diag,embedding,450,86.47,37.51,43.4,0.8126,3029,379,3503
+Ankh-base kNN,abtt,embedding,450,86.44,51.24,59.3,0.8953,3028,387,3503
+Ankh-base kNN,whiten,embedding,450,87.04,46.65,53.6,0.918,3049,372,3503
+Ankh-large kNN,none,embedding,1150,80.47,4.31,5.4,0.7959,2819,589,3503
+Ankh-large kNN,center,embedding,1150,80.84,4.05,5.0,0.7683,2832,565,3503
+Ankh-large kNN,diag,embedding,1150,82.76,11.22,13.6,0.7832,2899,512,3503
+Ankh-large kNN,abtt,embedding,1150,84.78,33.71,39.8,0.8851,2970,450,3503
+Ankh-large kNN,whiten,embedding,1150,86.58,41.14,47.5,0.8961,3033,396,3503
+ProtT5 kNN,none,embedding,3000,70.34,23.27,33.1,0.8398,2464,926,3503
+ProtT5 kNN,center,embedding,3000,70.45,17.64,25.0,0.81,2468,922,3503
+ProtT5 kNN,diag,embedding,3000,70.85,19.93,28.1,0.8211,2482,911,3503
+ProtT5 kNN,abtt,embedding,3000,76.73,20.53,26.7,0.8576,2688,707,3503
+ProtT5 kNN,whiten,embedding,3000,85.3,30.32,35.5,0.8854,2988,435,3503
+ProstT5 kNN,none,embedding,3000,79.45,44.73,56.3,0.9008,2783,592,3503
+ProstT5 kNN,center,embedding,3000,79.5,15.87,20.0,0.8331,2785,592,3503
+ProstT5 kNN,diag,embedding,3000,80.1,20.9,26.1,0.8443,2806,569,3503
+ProstT5 kNN,abtt,embedding,3000,86.15,46.5,54.0,0.8979,3018,381,3503
+ProstT5 kNN,whiten,embedding,3000,88.81,47.73,53.7,0.9008,3111,285,3503
+gLM2-embed,none,embedding,650,78.25,46.9,59.9,0.8843,2741,636,3503
+gLM2-embed,center,embedding,650,78.02,38.91,49.9,0.832,2733,643,3503
+gLM2-embed,diag,embedding,650,78.05,40.05,51.3,0.8403,2734,642,3503
+gLM2-embed,abtt,embedding,650,79.16,49.36,62.4,0.9089,2773,608,3503
+gLM2-embed,whiten,embedding,650,78.48,51.5,65.6,0.9102,2749,653,3503
+ProtTucker/EAT,none,embedding,3000,88.98,58.78,66.1,0.9412,3117,302,3503
