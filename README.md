@@ -27,7 +27,7 @@ Raw data, embeddings and intermediate results are too large for git. They are ar
 
 - Python 3.10 or later with `numpy`. The analysis scripts need nothing else.
 - For embeddings: a GPU, and `torch`, `transformers`, `sentencepiece`, `protobuf`, `huggingface_hub`, `safetensors` (`pip install -r requirements.txt`). ESM-C needs the Biohub fork of transformers; see `requirements.txt`.
-- [MMseqs2](https://github.com/soedinglab/MMseqs2) 18.8cc5c and [Foldseek](https://github.com/steineggerlab/foldseek) 10.941cd33 on the `PATH` (or set `MMSEQS` and `FOLDSEEK` to the binaries).
+- [MMseqs2](https://github.com/soedinglab/MMseqs2) 18.8cc5c and [Foldseek](https://github.com/steineggerlab/foldseek) 10.941cd33 (Tests 1 and 2; the Test 3 all-versus-all used commit 61a8f4c, see below) on the `PATH` (or set `MMSEQS` and `FOLDSEEK` to the binaries).
 - [phold](https://github.com/gbouras13/phold) with its database, for ProstT5-predicted 3Di. Set `PHOLD_DB` to the phold database directory (and `PHOLD` if phold is not on the `PATH`).
 - R 4.3 or later with `ggplot2`, `dplyr`, `tidyr`, `readr`, `scales`, `forcats` and `stringr`, for the figures.
 - The ProtTucker head weights (`tucker_weights.pt`, [Zenodo record 14675997](https://zenodo.org/records/14675997/files/tucker_weights.pt)) in `tools/`.
@@ -210,19 +210,24 @@ mmseqs easy-search $T/scope_all.fasta $T/scope_all.fasta $T/mmseqs_hits.tsv $T/t
 python3 scripts/31_test3_score_tsv.py --hits $T/mmseqs_hits.tsv --name "sequence (MMseqs2)" --restrict $C \
     --out results/test3_common_mmseqs.csv --per-query results/test3_perquery_mmseqs.csv
 
-# Foldseek, all versus all, on the databases 16b_scope_build_search.sh built in data/interim/scope_struct
-# The hit cap (--max-seqs 4000) matches the archived Foldseek outputs; -s and -e were not
-# recorded for these two runs, and the values below are permissive settings in line with the MMseqs2 run.
-W=data/interim/scope_struct
-#   C: ASTRAL coordinates (entry names carry a .ent suffix, removed before scoring)
-foldseek search $W/allDB $W/allDB $T/resC $T/tmp_c -s 9.5 -e 10000 --max-seqs 4000
-foldseek convertalis $W/allDB $W/allDB $T/resC $T/fsC.m8 --format-output query,target,evalue
+# Foldseek, all versus all. The paper's runs used Foldseek commit 61a8f4c (a build with the
+# 12-state 3Di alphabet, which createdb includes by default); other Foldseek versions return
+# different E-values and can reorder hits.
+#   C: ASTRAL 2.08 coordinates. createdb expands NMR entries into one record per model; keep only
+#   the 13,822 domains in $C, which have a single record.
+foldseek createdb data/scope/pdbstyle/pdbstyle-2.08 $T/allDB
+awk -F'\t' 'NR==FNR{w[$1];next} {n=$2; sub(/\.ent$/,"",n)} (n in w){print $1}' $C $T/allDB.lookup > $T/keys.txt
+for s in "" _ss _ca _h; do foldseek createsubdb $T/keys.txt $T/allDB$s $T/scopedb$s --subdb-mode 1; done
+foldseek search $T/scopedb $T/scopedb $T/resC $T/tmp_c -e 1000 -s 9.5 --max-seqs 4000
+foldseek convertalis $T/scopedb $T/scopedb $T/resC $T/fsC.m8 --format-output query,target,evalue
 awk -F'\t' -v OFS='\t' '{sub(/\.ent$/,"",$1); sub(/\.ent$/,"",$2); print}' $T/fsC.m8 > $T/fsC_hits.tsv
 python3 scripts/31_test3_score_tsv.py --hits $T/fsC_hits.tsv --name Foldseek --restrict $C \
     --out results/test3_common_fsC.csv --per-query results/test3_perquery_fsC.csv
-#   C': ProstT5 3Di for every domain (query and reference databases concatenated)
+#   C': ProstT5 3Di for all 15,176 domains (the query and reference databases from
+#   16b_scope_build_search.sh, concatenated), searched with the same settings
+W=data/interim/scope_struct
 for s in "" _ss _h; do foldseek concatdbs $W/cp_queryDB$s $W/cp_referenceDB$s $T/cpDB$s; done
-foldseek search $T/cpDB $T/cpDB $T/resCp $T/tmp_cp -s 9.5 -e 10000 --max-seqs 4000
+foldseek search $T/cpDB $T/cpDB $T/resCp $T/tmp_cp -e 1000 -s 9.5 --max-seqs 4000
 foldseek convertalis $T/cpDB $T/cpDB $T/resCp $T/fsCp_hits.tsv --format-output query,target,evalue
 python3 scripts/31_test3_score_tsv.py --hits $T/fsCp_hits.tsv --name ProstT5-Foldseek --restrict $C \
     --out results/test3_common_fsCp.csv --per-query results/test3_perquery_fsCp.csv
