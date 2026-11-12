@@ -240,19 +240,33 @@ python3 scripts/37_test3_cdf.py                      # results/test3_perquery_*.
 
 ## Data layout
 
-The Zenodo archive mirrors the paths the scripts expect:
+The Zenodo record holds two archives. Unpack both in the repository root:
 
-```
-data/raw/          Swiss-Prot slices as fetched (jsonl.gz), release 2026_02
-data/queries/      joint_<arm>_query.{fasta,jsonl}: queries with Pfam, GO, length, answerable and remote flags
-data/reference/    joint_reference.{fasta,jsonl}
-data/decoys/       <arm>_D0..D5_*_seed1..5.fasta, <arm>_D6_natural_hard_all.{fasta,jsonl}
-data/scope/        ASTRAL-40 2.08 sequences, classification, query/reference split, D2 shuffles, test3_common_ids.txt
-data/embeddings/   <model>/<stem>.n<count>.f16.npy with matching .ids.txt
-results/           search and kNN tables (sequence_*, structure_*, knn_*, scope_*), gzipped, plus bootstrap and analysis outputs
+```bash
+tar -xzf know-thy-neighbour_data.tar.gz        # data/ (except embeddings) and results/
+tar -xzf know-thy-neighbour_embeddings.tar.gz  # data/embeddings/
 ```
 
-Whitened kNN tables: `knn_<arm>_<model>_whiten.tsv.gz` and `scope_knn_<model>_whiten.tsv.gz` are exact ZCA (`--shrink 0`), the estimator reported throughout the paper. `scope_knn_<model>_whiten_shrunk.tsv.gz` is the shrinkage variant used only in the supplementary shrinkage ablation.
+They fill the paths the scripts expect:
+
+```
+data/raw/            Swiss-Prot slices as fetched (jsonl.gz), release 2026_02, and Pfam-A.clans.tsv.gz (Pfam 38.2)
+data/queries/        joint_<arm>_query.{fasta,jsonl}: queries with Pfam, GO, length, answerable and remote flags
+data/reference/      joint_reference.{fasta,jsonl}
+data/decoys/         <arm>_D0..D5_*_seed1..5.fasta, <arm>_D6_natural_hard_all.{fasta,jsonl}
+data/armC_queries/   Test 1 query FASTAs for the structure arms; data/armC_3di/ holds their ProstT5 3Di
+data/scope/          ASTRAL-40 2.08 sequences, classification, query/reference split, D2 shuffles, test3_common_ids.txt
+data/scope_3di*/     ProstT5 3Di for the SCOPe domains and their shuffles
+data/embeddings/     <model>/<stem>.n<count>.f16.npy with matching .ids.txt
+results/             search and kNN tables (sequence_*, structure_*, knn_*, scope_*, test3_hits_*), gzipped,
+                     manifests, and the Test 3 scored tables (test3_common_*.csv, test3_perquery_*.csv)
+```
+
+The ASTRAL 2.08 coordinates (`pdbstyle-sel-gs-bib-40-2.08`, about 1 GB) are not in the archive; `16b_scope_build_search.sh` downloads them from scop.berkeley.edu.
+
+Whitened kNN tables. `scope_knn_<model>_whiten.tsv.gz` (Test 2) is exact ZCA (`--shrink 0`), and `scope_knn_<model>_whiten_shrunk.tsv.gz` is the shrinkage variant used only in the supplementary shrinkage ablation. The Test 1 tables `knn_<arm>_<model>_whiten.tsv.gz` were built with the script's default shrinkage, `a = d/n`, which on the 296,807-protein reference is at most 0.009 and does not change any reported number.
+
+Test 3 hit lists. `test3_hits_foldseek_C.tsv.gz` and `test3_hits_foldseek_Cprime.tsv.gz` are the Foldseek all-versus-all outputs behind the paper (Foldseek commit 61a8f4c, see Test 3 above); they are archived because another Foldseek build gives different E-values. `test3_hits_mmseqs.tsv.gz` is the MMseqs2 all-versus-all and is deterministic.
 
 Model checkpoints: `05_embed.py` pins a Hugging Face revision for six models. ESM-2 150M, ESM-2 650M, ProtT5, ProstT5 and gLM2-embed are unpinned, because the revision used could not be recovered. A fresh run of those five loads the current `main` branch, which may differ from the checkpoint behind the paper. The run manifest records which revision was loaded. `--require-pinned` refuses unpinned models.
 

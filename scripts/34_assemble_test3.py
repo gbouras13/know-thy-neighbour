@@ -32,6 +32,7 @@ NAMES = {
     "Foldseek": "Foldseek", "ProstT5-Foldseek": "ProstT5-Foldseek",
     # earlier --name labels for the two Foldseek arms
     "Foldseek C (real struct)": "Foldseek",
+    "Foldseek C": "Foldseek",
     "Foldseek C-prime (ProstT5 3Di)": "ProstT5-Foldseek",
     "sequence (MMseqs2)": "sequence (MMseqs2)",
 }
