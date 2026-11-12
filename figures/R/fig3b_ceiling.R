@@ -11,7 +11,7 @@
 # variant exists, each model has two rows: as run (upper) and after ZCA
 # whitening (lower).
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 
@@ -88,5 +88,5 @@ p <- ggplot(both) +
 
 # 6.9 x 4.3 in (about 3.4 in tall at the 5.5 in text width). The legend label
 # "baseline" matches the transform-ladder figures.
-p <- p + theme_nnm(base_size = 10) + theme(legend.position = "top")
+p <- p + theme_ktn(base_size = 10) + theme(legend.position = "top")
 save_fig(p, "fig3b_ceiling", width = 6.9, height = 4.3)

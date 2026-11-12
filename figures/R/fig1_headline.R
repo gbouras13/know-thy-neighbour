@@ -7,7 +7,7 @@
 # Test 1 bars carry query-level bootstrap intervals. Test 2 has no intervals of
 # the same construction, so its bars are drawn without them.
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 
@@ -61,5 +61,5 @@ p <- ggplot(d, aes(x = tpr, y = method, fill = family)) +
   )
 
 # 6.9 x 3.5 in; scaled to the 5.5 in text width, base_size 10 renders at ~8 pt.
-p <- p + theme_nnm(base_size = 10) + theme(legend.position = "top")
+p <- p + theme_ktn(base_size = 10) + theme(legend.position = "top")
 save_fig(p, "fig1_headline", width = 6.9, height = 3.5)

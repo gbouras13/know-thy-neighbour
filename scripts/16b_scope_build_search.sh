@@ -25,8 +25,10 @@ set -euo pipefail
 
 BASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FOLDSEEK="${FOLDSEEK:-$(command -v foldseek || true)}"
-FOLDSEEK="${FOLDSEEK:-$HOME/miniforge3/envs/foldseek/bin/foldseek}"
-command -v "$FOLDSEEK" >/dev/null 2>&1 || { echo "foldseek not found" >&2; exit 1; }
+if [[ -z "$FOLDSEEK" ]] || ! command -v "$FOLDSEEK" >/dev/null 2>&1; then
+  echo "foldseek not found: put it on PATH or set FOLDSEEK=/path/to/foldseek" >&2
+  exit 1
+fi
 THREADS="${1:-8}"
 
 S="$BASE/data/scope"; W="${SCOPE_WORK:-$BASE/data/interim/scope_struct}"

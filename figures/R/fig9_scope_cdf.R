@@ -16,7 +16,7 @@
 # baseline, the supervised reference (ProtTucker), and three pLMs (Ankh-base,
 # ESM-2 650M, ESM-C 6B) with and without whitening.
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 

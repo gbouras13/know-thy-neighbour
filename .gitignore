@@ -3,7 +3,7 @@
 /results/
 /logs/
 figures/out/
-/tools/*.pt
+/tools/
 __pycache__/
 *.pyc
 .DS_Store

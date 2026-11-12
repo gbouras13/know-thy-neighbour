@@ -7,7 +7,7 @@
 # A top-1 hit counts as correct only if it is in the query's superfamily; the
 # query's own family is held out. ProtTucker is excluded: it is a supervised
 # head rather than a raw pLM.
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 source(file.path(PROJ, "figures", "R", "helpers_ladder.R"))

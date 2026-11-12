@@ -14,8 +14,8 @@ Test 1 sensitivity is understated. A rate near the base rate means the accepted
 negatives look like ordinary D6 proteins.
 
 Inputs:  results/<table> as in 25_bootstrap_test1.py. The Foldseek table is
-         read from structure_C_<arm>.tsv(.gz) if present, else
-         structure_Cn_<arm>.tsv(.gz).
+         read from structure_Cn_<arm>.tsv(.gz) if it holds D6 rows, else
+         structure_C_<arm>.tsv(.gz). The run aborts if neither covers any D6.
 Outputs: results/d6_structural_check.tsv (per method) and
          results/d6_structural_check_proteins.tsv (per accepted protein).
 Run:     python scripts/46_d6_structural_check.py [--target-fpr 0.01] [--evalue 1e-3]
@@ -78,16 +78,18 @@ def main():
     print(f"D6 negatives: {len(d6)}")
 
     def merged(tmpls, col, better):
+        """Per arm, the first template whose table holds D6 rows. A table that
+        exists but carries no D6 query falls through to the next template."""
         out = {}
         for arm in ARMS:
             for t in tmpls:
                 b = best(BASE / "results" / t.format(arm=arm), col, better)
-                if b:
+                if b and any(q.startswith(f"{NEG}|") for q in b):
                     out.update(b)
                     break
         return out
 
-    fs = merged(["structure_C_{arm}.tsv.gz", "structure_Cn_{arm}.tsv.gz"], 2, "lower")
+    fs = merged(["structure_Cn_{arm}.tsv.gz", "structure_C_{arm}.tsv.gz"], 2, "lower")
     mm = merged(["sequence_{arm}_vs_joint.tsv.gz"], 2, "lower")
     if not fs:
         raise SystemExit("no Foldseek table found (structure_C_* / structure_Cn_*)")
@@ -97,6 +99,10 @@ def main():
         return v if v else (None, None)
 
     covered = [a for a in d6 if f"{NEG}|{a}" in fs]
+    if not covered:
+        raise SystemExit("the Foldseek table covers no D6 protein; the base rate "
+                         "and every per-method rate would be meaningless. Check "
+                         "that structure_Cn_*/structure_C_* include the D6 queries.")
     base_hits = sum(1 for a in covered if fs[f"{NEG}|{a}"][0] < args.evalue)
     base_rate = base_hits / max(len(covered), 1)
     print(f"Foldseek reports a hit for {len(covered)} D6 proteins; "

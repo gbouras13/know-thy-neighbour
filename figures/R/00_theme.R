@@ -68,7 +68,7 @@ TRANSFORM_LABELS <- c(none = "baseline", center = "+center", diag = "+diag",
                       abtt = "+ABTT", whiten = "+whiten")
 
 # --- theme -----------------------------------------------------------------
-theme_nnm <- function(base_size = 9, base_family = "") {
+theme_ktn <- function(base_size = 9, base_family = "") {
   theme_minimal(base_size = base_size, base_family = base_family) +
     theme(
       panel.grid.minor   = element_blank(),
@@ -92,7 +92,7 @@ theme_nnm <- function(base_size = 9, base_family = "") {
     )
 }
 
-theme_set(theme_nnm())
+theme_set(theme_ktn())
 
 # --- helpers ---------------------------------------------------------------
 

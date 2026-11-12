@@ -27,6 +27,8 @@ import math
 import statistics as st
 from pathlib import Path
 
+from tableio import find_table
+
 BASE = Path(__file__).resolve().parent.parent
 
 # (display, file, score col, better, family, scale)
@@ -92,13 +94,13 @@ def main():
     rows = []
     for name, path, col, better, fam, scale in SPECS:
         paths = [BASE / x for x in ([path] if isinstance(path, str) else path)]
-        missing = [q for q in paths if not q.exists()]
+        missing = [q for q in paths if find_table(q) is None]   # .tsv or .tsv.gz
         if missing == paths:
             print(f"  [skip] {missing[0].name}")
             continue
         for q in missing:
             print(f"  [warn] {q.name} absent — that class will be empty")
-        paths = [q for q in paths if q.exists()]
+        paths = [find_table(q) for q in paths if q not in missing]
         best = {}
         for one in paths:
             best.update(best_hits(one, col, better))

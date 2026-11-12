@@ -26,23 +26,20 @@ Run:     python3 scripts/24_heldout.py [--target-fpr 0.01] [--repeats 200]
 Stdlib + numpy.
 """
 import argparse
-import gzip
 import json
 import random
 from pathlib import Path
 
 import numpy as np
 
+from tableio import open_table
+
 BASE = Path(__file__).resolve().parent.parent
 S = BASE / "data/scope"
 
 
 def smart(p):
-    p = Path(p)
-    if p.exists():
-        return gzip.open(p, "rt") if p.suffix == ".gz" else open(p)
-    g = p.with_name(p.name + ".gz")
-    return gzip.open(g, "rt") if g.exists() else None
+    return open_table(p)                     # .tsv or .tsv.gz, else None
 
 
 def outcomes(path, col, better, header, qry, ref):
@@ -138,9 +135,6 @@ def main():
                  ("esm2_650m", "abtt"), ("esmc_300m", "whiten"),
                  ("esmc_600m", "whiten"), ("esmc_6b", "whiten")]:
         methods.append((f"{m} +{t}", f"results/scope_knn_{m}_{t}.tsv.gz", 3, "higher", True))
-    for m, v in [("glm2_650m_embed", "nulldecoy"), ("esm2_650m", "nullself"),
-                 ("glm2_650m_embed", "evdgumbel")]:
-        methods.append((f"{m} +{v}", f"results/scope_knn_{m}_{v}.tsv.gz", 3, "higher", True))
 
     data = {}
     for name, path, col, better, header in methods:

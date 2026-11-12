@@ -27,8 +27,8 @@ Raw data, embeddings and intermediate results are too large for git. They are ar
 
 - Python 3.10 or later with `numpy`. The analysis scripts need nothing else.
 - For embeddings: a GPU, and `torch`, `transformers`, `sentencepiece`, `protobuf`, `huggingface_hub`, `safetensors` (`pip install -r requirements.txt`). ESM-C needs the Biohub fork of transformers; see `requirements.txt`.
-- [MMseqs2](https://github.com/soedinglab/MMseqs2) 18.8cc5c and [Foldseek](https://github.com/steineggerlab/foldseek) 10.941cd33 on the `PATH`.
-- [phold](https://github.com/gbouras13/phold) with its database, for ProstT5-predicted 3Di. Set `PHOLD` and `PHOLD_DB`.
+- [MMseqs2](https://github.com/soedinglab/MMseqs2) 18.8cc5c and [Foldseek](https://github.com/steineggerlab/foldseek) 10.941cd33 on the `PATH` (or set `MMSEQS` and `FOLDSEEK` to the binaries).
+- [phold](https://github.com/gbouras13/phold) with its database, for ProstT5-predicted 3Di. Set `PHOLD_DB` to the phold database directory (and `PHOLD` if phold is not on the `PATH`).
 - R 4.3 or later with `ggplot2`, `dplyr`, `tidyr`, `readr`, `scales`, `forcats` and `stringr`, for the figures.
 - The ProtTucker head weights (`tucker_weights.pt`, [Zenodo record 14675997](https://zenodo.org/records/14675997/files/tucker_weights.pt)) in `tools/`.
 
@@ -63,7 +63,7 @@ Output goes to `figures/out/` as matched PDF and PNG files. Each script also run
 
 ## Reproducing the analyses from intermediate results
 
-With the Zenodo `results/` and `data/` folders unpacked in the repository root, the analyses and figure data rebuild on a laptop:
+With the Zenodo `results/` and `data/` folders unpacked in the repository root, the analyses and figure data rebuild on a laptop. The Zenodo result tables are gzipped (`*.tsv.gz`), while the pipeline below writes plain `*.tsv`; every script accepts either form.
 
 ```bash
 python3 scripts/10_threshold.py                       # Test 1 transform ladder at 1% FPR
@@ -84,23 +84,35 @@ python3 scripts/37_test3_cdf.py
 Rscript figures/R/make_all.R
 ```
 
-Robustness analyses:
+`results/bootstrap_test1.txt` also holds the achieved false-positive rate of every method against each negative class (D0–D6) at the pooled D6 threshold.
+
+The eigenvalue spectra need the embedding matrices:
 
 ```bash
-python3 scripts/25_bootstrap_test1.py --replicates 400 --seed 0 --pos-filter single_pfam
-python3 scripts/25_bootstrap_test1.py --replicates 400 --seed 0 --pos-filter arch_match
-python3 scripts/25_bootstrap_test1.py --replicates 400 --seed 0 --length-weighted
-python3 scripts/45_test2_nonanswerable.py            # independent Test 2 negatives
-python3 scripts/46_d6_structural_check.py            # structure hits for accepted D6 negatives
+python3 scripts/28_spectrum.py --models esm2_150m esm2_650m esm2_3b esmc_300m esmc_600m esmc_6b ankh_base ankh_large prott5 prostt5 glm2_650m_embed prottucker --stem scope_reference   # spectrum, Test 2 reference
+python3 scripts/28_spectrum.py --models <same keys> --stem joint_reference                                                                                                  # spectrum, Test 1 reference
 ```
 
-Two analyses need the embedding matrices:
+### Robustness analyses
+
+These produce the supplementary robustness tables. All but the last run from the intermediate results.
 
 ```bash
-python3 scripts/28_spectrum.py --models esm2_150m esm2_650m esm2_3b esmc_300m esmc_600m esmc_6b ankh_base ankh_large prott5 prostt5 glm2_650m_embed prottucker --stem scope_reference   # Table S3
-python3 scripts/28_spectrum.py --models ... --stem joint_reference                                                                                                   # Table S2
-python3 scripts/47_pc_covariates.py --models esm2_650m esmc_6b prott5           # principal directions vs length and composition
+# Test 1, positives restricted to single-Pfam-domain queries
+python3 scripts/25_bootstrap_test1.py --replicates 400 --seed 0 --pos-filter single_pfam > results/bootstrap_test1_single_pfam.txt
+# Test 1, positives restricted to queries whose exact Pfam architecture occurs in the reference
+python3 scripts/25_bootstrap_test1.py --replicates 400 --seed 0 --pos-filter arch_match > results/bootstrap_test1_arch_match.txt
+# Test 1, threshold fitted on D6 reweighted to the positives' length distribution
+python3 scripts/25_bootstrap_test1.py --replicates 400 --seed 0 --length-weighted > results/bootstrap_test1_length_weighted.txt
+# Test 2, the published thresholds applied to the 566 non-answerable queries as independent negatives
+python3 scripts/45_test2_nonanswerable.py            # results/test2_nonanswerable.tsv
+# Test 1, Foldseek structure hits for the D6 negatives each method accepts at its 1% threshold
+python3 scripts/46_d6_structural_check.py            # results/d6_structural_check*.tsv
+# Test 2, what the leading principal components encode (length, composition); needs the embedding matrices
+python3 scripts/47_pc_covariates.py --models esm2_650m esmc_6b prott5   # results/pc_covariates.json
 ```
+
+The Test 1 threshold is the score of the (k+1)th highest D6 negative, with k = int(0.01 × n). It therefore admits 34 of 3,344 D6 proteins (1.02%). `25_bootstrap_test1.py` skips a method, with a warning, when fewer than k+1 of its calibration negatives have a score, and `46_d6_structural_check.py` stops if its Foldseek table covers no D6 protein.
 
 ## Running the full pipeline
 
@@ -109,7 +121,7 @@ Model keys used below: `esm2_150m esm2_650m esm2_3b esmc_300m esmc_600m esmc_6b 
 ### Test 1: Swiss-Prot
 
 ```bash
-python3 scripts/01_fetch_swissprot.py --arm all
+python3 scripts/01_fetch_swissprot.py --arm all     # live UniProt query; see the note below
 for arm in small mid control; do python3 scripts/02_build_splits.py --arm $arm; done
 python3 scripts/02c_joint_split.py                   # 30% identity, 80% coverage, 20% of clusters held out
 python3 scripts/02d_measure_separation.py --prefix joint
@@ -126,7 +138,7 @@ for arm in small mid control; do REFNAME=joint ./scripts/04_run_sequence.sh $arm
 ./scripts/07a_build_query_fastas.sh                  # data/armC_queries/<arm>_armC_queries.fasta
 for arm in small mid control; do                     # 3Di prediction (GPU)
   phold proteins-predict -i data/armC_queries/${arm}_armC_queries.fasta \
-      -o data/armC_3di/$arm -p $arm -d $PHOLD_DB
+      -o data/armC_3di/$arm -p $arm -d $PHOLD_DB -t 16 -f --mask_threshold 0 --batch_size 10
 done
 for arm in small mid control; do REFNAME=joint ./scripts/07b_search_structure.sh $arm 16; done
 ./scripts/07d_top50.sh                               # keep the 50 best hits per query
@@ -136,12 +148,15 @@ for arm in small mid control; do python3 scripts/07c_armC_hard_negatives.py --ar
 for m in <model keys>; do for arm in small mid control; do
   python3 scripts/05_embed.py --model $m --arm $arm --prefix joint
   python3 scripts/06_knn.py   --model $m --arm $arm --prefix joint
-  for t in center diag abtt whiten; do
+  for t in center diag abtt; do
     python3 scripts/18_center.py --model $m --arm $arm --transform $t
   done
+  python3 scripts/18_center.py --model $m --arm $arm --transform whiten --shrink 0   # exact ZCA, as in the paper
 done; done
 for arm in small mid control; do python3 scripts/21_prottucker_direct.py --arm $arm; done
 ```
+
+`01_fetch_swissprot.py` queries the live UniProt REST API, so a fresh run returns whatever release is current. For exact reproduction, skip it and start from the Zenodo `data/raw/` slices (Swiss-Prot release 2026_02).
 
 `20_prottucker.sh` and `20b_parse_eat.py` run ProtTucker through the original EAT code instead, as a cross-check of `21_prottucker_direct.py`.
 
@@ -151,47 +166,88 @@ for arm in small mid control; do python3 scripts/21_prottucker_direct.py --arm $
 python3 scripts/11_scope_build.py
 ./scripts/12_scope_search.sh                         # D2 shuffles and MMseqs2
 python3 scripts/13_scope_analyse.py
+# ProstT5 3Di for every domain (GPU): queries headed "real|<id>", reference ids bare
+mkdir -p data/interim
+{ awk '/^>/{print ">real|" substr($1,2); next} {print}' data/scope/scope_query.fasta
+  cat data/scope/scope_reference.fasta; } > data/interim/scope_3di_input.fasta
+phold proteins-predict -i data/interim/scope_3di_input.fasta -o data/scope_3di -p scope \
+    -d $PHOLD_DB -t 16 -f --mask_threshold 0 --batch_size 10   # data/scope_3di/scope_{aa,3di}.fasta
 ./scripts/16b_scope_build_search.sh                  # Foldseek on ASTRAL coordinates and on ProstT5 3Di
 ./scripts/41a_predict_shuffle_3di.sh && ./scripts/41_scope_cprime_shuffles.sh
 for m in <model keys>; do
   python3 scripts/14_scope_embed.py --model $m --save-embeddings
   for t in center diag abtt; do python3 scripts/18_center.py --model $m --scope --transform $t; done
   python3 scripts/18_center.py --model $m --scope --transform whiten --shrink 0      # exact ZCA, as in the paper
-  python3 scripts/18_center.py --model $m --scope --transform whiten --suffix whiten_shrunk   # Table S4
+  python3 scripts/18_center.py --model $m --scope --transform whiten --suffix whiten_shrunk   # shrinkage ablation
 done
 python3 scripts/21_prottucker_direct.py --arm scope
 ```
 
-The paper reports exact ZCA throughout (`--shrink 0`). Without that flag, `18_center.py` shrinks the covariance by `a = d/n`, which is the comparison in Table S4.
+The phold input must sit outside the output directory, because `-f` recreates it. `41a_predict_shuffle_3di.sh` predicts 3Di for the D2 shuffles with the same flags.
+
+The paper reports exact ZCA throughout (`--shrink 0`). Without that flag, `18_center.py` shrinks the covariance by `a = d/n` (capped at 0.5), which is the supplementary shrinkage ablation.
 
 ### Test 3: Foldseek SCOP benchmark
 
+Every arm is scored on the same 13,822 domains, listed in `data/scope/test3_common_ids.txt`: the domains of the 15,176-domain split that have usable ASTRAL coordinates in the Foldseek structure database. No script in this repository builds that list; it is provided in the Zenodo archive. Of these domains, 5,003 qualify as queries.
+
 ```bash
-python3 scripts/30_test3_allvall.py --models <model keys> prottucker \
-    --restrict data/scope/test3_common_ids.txt --per-query results/test3_perquery_embed.csv
-# MMseqs2 all-versus-all over all 15,176 domains, scored on the same domain set
-mmseqs easy-search astral.fa astral.fa hits.m8 tmp -s 7.5 --max-seqs 4000 -e 10000 --format-output query,target,evalue
-python3 scripts/31_test3_score_tsv.py --hits hits.m8 --name mmseqs \
-    --restrict data/scope/test3_common_ids.txt --out results/test3_common_mmseqs.csv
-python3 scripts/34_assemble_test3.py
-python3 scripts/37_test3_cdf.py
+C=data/scope/test3_common_ids.txt
+T=data/interim/test3; mkdir -p $T
+
+# embedding arms, raw and ZCA-whitened (whitening fitted on the Test 2 reference only)
+python3 scripts/30_test3_allvall.py \
+    --models esm2_150m esm2_650m esm2_3b esmc_300m esmc_600m esmc_6b ankh_base ankh_large prott5 prostt5 glm2_650m_embed \
+             esm2_150m:whiten esm2_650m:whiten esm2_3b:whiten esmc_300m:whiten esmc_600m:whiten esmc_6b:whiten \
+             ankh_base:whiten ankh_large:whiten prott5:whiten prostt5:whiten glm2_650m_embed:whiten prottucker \
+    --restrict $C --out results/test3_common_embed.csv --per-query results/test3_perquery_embed.csv
+
+# MMseqs2, all versus all over the 15,176 split domains
+# (data/scope/astral-scopedom-seqres-gd-sel-gs-bib-40-2.08.fa minus the one domain 11_scope_build.py drops)
+cat data/scope/scope_reference.fasta data/scope/scope_query.fasta > $T/scope_all.fasta
+mmseqs easy-search $T/scope_all.fasta $T/scope_all.fasta $T/mmseqs_hits.tsv $T/tmp_mmseqs \
+    -s 7.5 --max-seqs 4000 -e 10000 --format-output query,target,evalue
+python3 scripts/31_test3_score_tsv.py --hits $T/mmseqs_hits.tsv --name "sequence (MMseqs2)" --restrict $C \
+    --out results/test3_common_mmseqs.csv --per-query results/test3_perquery_mmseqs.csv
+
+# Foldseek, all versus all, on the databases 16b_scope_build_search.sh built in data/interim/scope_struct
+W=data/interim/scope_struct
+#   C: ASTRAL coordinates (entry names carry a .ent suffix, removed before scoring)
+foldseek search $W/allDB $W/allDB $T/resC $T/tmp_c -s 9.5 -e 10000 --max-seqs 4000
+foldseek convertalis $W/allDB $W/allDB $T/resC $T/fsC.m8 --format-output query,target,evalue
+awk -F'\t' -v OFS='\t' '{sub(/\.ent$/,"",$1); sub(/\.ent$/,"",$2); print}' $T/fsC.m8 > $T/fsC_hits.tsv
+python3 scripts/31_test3_score_tsv.py --hits $T/fsC_hits.tsv --name Foldseek --restrict $C \
+    --out results/test3_common_fsC.csv --per-query results/test3_perquery_fsC.csv
+#   C': ProstT5 3Di for every domain (query and reference databases concatenated)
+for s in "" _ss _h; do foldseek concatdbs $W/cp_queryDB$s $W/cp_referenceDB$s $T/cpDB$s; done
+foldseek search $T/cpDB $T/cpDB $T/resCp $T/tmp_cp -s 9.5 -e 10000 --max-seqs 4000
+foldseek convertalis $T/cpDB $T/cpDB $T/resCp $T/fsCp_hits.tsv --format-output query,target,evalue
+python3 scripts/31_test3_score_tsv.py --hits $T/fsCp_hits.tsv --name ProstT5-Foldseek --restrict $C \
+    --out results/test3_common_fsCp.csv --per-query results/test3_perquery_fsCp.csv
+
+python3 scripts/34_assemble_test3.py                 # results/test3_common_*.csv -> figures/data/fig10_test3.csv
+python3 scripts/37_test3_cdf.py                      # results/test3_perquery_*.csv -> figures/data/fig9_test3_cdf.csv
 ```
 
-Foldseek all-versus-all hit lists are scored with `31_test3_score_tsv.py` in the same way. Every arm is scored on the 13,822 domains with usable coordinates, of which 5,003 qualify as queries.
+`31_test3_score_tsv.py` appends to `--out`, so remove an old `results/test3_common_*.csv` before rescoring an arm. `34_assemble_test3.py` stops if the arms were scored on different query counts.
 
 ## Data layout
 
 The Zenodo archive mirrors the paths the scripts expect:
 
 ```
-data/raw/          Swiss-Prot slices as fetched (jsonl.gz)
+data/raw/          Swiss-Prot slices as fetched (jsonl.gz), release 2026_02
 data/queries/      joint_<arm>_query.{fasta,jsonl}: queries with Pfam, GO, length, answerable and remote flags
 data/reference/    joint_reference.{fasta,jsonl}
 data/decoys/       <arm>_D0..D5_*_seed1..5.fasta, <arm>_D6_natural_hard_all.{fasta,jsonl}
 data/scope/        ASTRAL-40 2.08 sequences, classification, query/reference split, D2 shuffles, test3_common_ids.txt
 data/embeddings/   <model>/<stem>.n<count>.f16.npy with matching .ids.txt
-results/           search and kNN tables (sequence_*, structure_*, knn_*, scope_*), bootstrap and analysis outputs
+results/           search and kNN tables (sequence_*, structure_*, knn_*, scope_*), gzipped, plus bootstrap and analysis outputs
 ```
+
+Whitened kNN tables: `knn_<arm>_<model>_whiten.tsv.gz` and `scope_knn_<model>_whiten.tsv.gz` are exact ZCA (`--shrink 0`), the estimator reported throughout the paper. `scope_knn_<model>_whiten_shrunk.tsv.gz` is the shrinkage variant used only in the supplementary shrinkage ablation.
+
+Model checkpoints: `05_embed.py` pins a Hugging Face revision for six models. ESM-2 150M, ESM-2 650M, ProtT5, ProstT5 and gLM2-embed are unpinned, because the revision used could not be recovered. A fresh run of those five loads the current `main` branch, which may differ from the checkpoint behind the paper. The run manifest records which revision was loaded. `--require-pinned` refuses unpinned models.
 
 ## Citation
 
@@ -203,3 +259,7 @@ results/           search and kNN tables (sequence_*, structure_*, knn_*, scope_
   year      = {2026}
 }
 ```
+
+## Licence
+
+MIT; see `LICENSE`.

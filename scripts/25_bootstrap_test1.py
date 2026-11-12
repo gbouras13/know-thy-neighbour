@@ -64,9 +64,13 @@ One replicate:
      different length ranges and were built separately);
   2. carry each drawn query's D2/D3 derivatives with it;
   3. resample D6, and D0/D1/D4/D5, with replacement as their own units;
-  4. REFIT the threshold inside the replicate: the most permissive score holding
-     FPR at or below the target against the resampled negatives of the
-     calibration class (D6 by default), pooled over all arms and length bins;
+  4. REFIT the threshold inside the replicate on the resampled negatives of
+     the calibration class (D6 by default), pooled over all arms and length bins: with n negatives and
+     k = int(target * n), the threshold is the score of the (k+1)th highest
+     negative, so k+1 negatives are accepted and the achieved FPR is (k+1)/n,
+     slightly above the target (34 of 3,344 D6, 1.02%, at a 1% target). A
+     method with fewer than k+1 scored calibration negatives is skipped with a
+     warning, since its threshold would otherwise fall to -inf;
   5. apply it and record TPR over resampled positives and achieved FPR per class.
 
 Every method sees the identical resampled unit indices on every replicate, so
@@ -311,7 +315,9 @@ def build_units(arm, negative_class, verify=False, pos_filter="none", ref_arch=N
 
 
 def pick_threshold(neg_scores, n_neg, target, better):
-    """Most permissive score holding FPR <= target over the ISSUED negatives.
+    """Threshold over the ISSUED negatives: with k = int(target * n_neg), the
+    score of the (k+1)th best negative. Accepting scores >= it admits k+1
+    negatives, so the achieved FPR is (k+1)/n_neg, slightly above the target.
 
     n_neg is the issued count, so negatives with no hit at all count as
     correctly rejected rather than being dropped from the denominator.
@@ -326,6 +332,13 @@ def pick_threshold(neg_scores, n_neg, target, better):
         # target FPR exceeds what the negatives can produce; accept everything
         return ordered[-1]
     return ordered[k]
+
+
+def ordinal(n):
+    """1 -> '1st', 2 -> '2nd', 11 -> '11th', 34 -> '34th'."""
+    if 10 <= n % 100 <= 20:
+        return f"{n}th"
+    return f"{n}{ {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
 
 
 def main():
@@ -562,6 +575,49 @@ def main():
         print("[skip] Those methods are ABSENT from every table below. If one was "
               "expected,\n[skip] check the result file name and location.")
 
+    # ---- guard: enough scored calibration negatives -------------------------
+    # The threshold is the score of the (k+1)th highest calibration negative.
+    # Negatives with no reported hit score -inf; if fewer than k+1 are finite,
+    # the threshold becomes -inf and every query is accepted. Such a method is
+    # skipped with a warning so the remaining methods still run.
+    def cal_index(cal, w):
+        """0-based index, in descending score order, of the threshold negative."""
+        if w is None:
+            return int(args.target_fpr * cal.size)
+        o = np.argsort(-cal, kind="stable")
+        cw = np.cumsum(w[o]) / max(w.sum(), 1e-12)
+        return int(np.searchsorted(cw, args.target_fpr + 1e-12, side="right"))
+
+    def warn_skip(name, n_fin, n_cal, need, where="the full data"):
+        print(f"[skip] {name}: in {where}, only {n_fin} of {n_cal} "
+              f"{args.negative} calibration negatives have a score; the "
+              f"threshold needs at least {need}. Method skipped.")
+
+    bad = {}
+    for name, per_arm in proj.items():
+        if POOLED:
+            use = [a for a in ARMS
+                   if a in per_arm and args.negative in neg_classes[a]]
+            cal = (np.concatenate([per_arm[a][2][args.negative] for a in use])
+                   if use else np.array([]))
+            w = (np.concatenate([neg_w[a] for a in use])
+                 if use and neg_w is not None else None)
+        elif (calib_arm in per_arm
+              and args.negative in neg_classes[calib_arm]):
+            cal = per_arm[calib_arm][2][args.negative][
+                calib_mask[calib_arm][args.negative]]
+            w = None
+        else:
+            continue
+        if not cal.size:
+            continue
+        n_fin = int(np.isfinite(cal).sum())
+        need = min(cal_index(cal, w), cal.size - 1) + 1
+        if n_fin < need:
+            bad[name] = True
+            warn_skip(name, n_fin, int(cal.size), need)
+    proj = {n: v for n, v in proj.items() if n not in bad}
+
     rng = np.random.default_rng(args.seed)
     tprs = defaultdict(list)
     fprs = defaultdict(list)
@@ -578,6 +634,7 @@ def main():
                      for c in DERIVED} for a in ARMS}
 
     for _ in range(args.replicates):
+        proj_rep = {n: v for n, v in proj.items() if n not in bad}
         # ONE shared resample per replicate, reused by every method: that is
         # what makes the differences paired.
         draw_q = {a: rng.integers(0, n_units[a], n_units[a]) for a in ARMS}
@@ -585,7 +642,7 @@ def main():
                       for c in neg_classes[a]} for a in ARMS}
 
         per_method = {}
-        for name, per_arm in proj.items():
+        for name, per_arm in proj_rep.items():
             # --- refit the threshold inside this replicate -------------------
             if POOLED:
                 # every arm, every bin: one operating point for all methods
@@ -623,6 +680,13 @@ def main():
                 k = int(args.target_fpr * n_cal)
                 ordered = np.sort(cal)[::-1]
                 thr = ordered[k] if k < ordered.size else ordered[-1]
+            if not np.isfinite(thr):
+                # too few scored negatives in this replicate (see guard above)
+                if name not in bad:
+                    bad[name] = True
+                    warn_skip(name, int(np.isfinite(cal).sum()), n_cal,
+                              min(k, n_cal - 1) + 1, where="a bootstrap replicate")
+                continue
             thrs[name].append(float(thr))
 
             # --- TPR over resampled positive units ---------------------------
@@ -687,6 +751,20 @@ def main():
             if args.baseline in per_method:
                 diffs[n].append(v - per_method[args.baseline])
 
+    # A method that failed the guard in any replicate is dropped entirely, so
+    # every reported interval rests on the full set of replicates.
+    for name in bad:
+        for store in (tprs, fprs, thrs, wfprs, diffs):
+            store.pop(name, None)
+        for key in [k_ for k_ in list(per_class) + list(strata_tpr)
+                    if k_[0] == name]:
+            per_class.pop(key, None)
+            strata_tpr.pop(key, None)
+    if args.baseline in bad:
+        print(f"[skip] baseline {args.baseline!r} was skipped; no paired "
+              f"differences are reported.")
+        diffs.clear()
+
     def ci(v):
         if not v:
             return None
@@ -746,9 +824,9 @@ def main():
           f"(calibration {args.calib_bin},")
     print(f"mean {ncal} {args.negative} negatives per replicate, so a "
           f"{args.target_fpr:.0%} target is set by the")
-    rank = max(1, int(args.target_fpr * ncal))
-    suffix = {1: "st", 2: "nd", 3: "rd"}.get(rank if rank < 20 else 0, "th")
-    print(f"{rank}{suffix}-ranked false positive):\n")
+    # threshold = score of the (k+1)th highest negative, k = int(target * n)
+    rank = int(args.target_fpr * ncal) + 1
+    print(f"{ordinal(rank)}-ranked false positive):\n")
     print("Thresholds are shown in each method's NATIVE direction (E-value for "
           "the\nalignment arms, cosine for the kNN arms).\n")
     print(f"{'method':<22}{'median thr':>14}{'95% range':>30}"

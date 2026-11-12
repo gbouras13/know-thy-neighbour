@@ -17,11 +17,12 @@ Stdlib only.
 """
 
 import argparse
-import gzip
 import json
 import math
 from collections import defaultdict
 from pathlib import Path
+
+from tableio import find_table, open_table
 
 BASE = Path(__file__).resolve().parent.parent
 ARMS = ("small", "mid", "control")
@@ -52,7 +53,7 @@ METHODS = [
 def best_scores(path, col, better):
     """query id -> best score. Skips a header line if present."""
     best = {}
-    with gzip.open(path, "rt") as fh:
+    with open_table(path) as fh:
         first = fh.readline()
         if first and not first.startswith(("real|", "D0", "D1", "D2", "D3",
                                            "D4", "D5", "D6")):
@@ -204,8 +205,8 @@ def main():
         # point of 25_bootstrap_test1.py.
         cal_scores, cal_lengths = {}, {}
         for a in ARMS:
-            f = BASE / "results" / tmpl.format(arm=a)
-            if not f.exists():
+            f = find_table(BASE / "results" / tmpl.format(arm=a))   # .tsv or .tsv.gz
+            if f is None:
                 continue
             # Qualify both sides by arm so accessions cannot collide between
             # arms, and so threshold()'s f"{neg}|{cid}" lookup still resolves.
@@ -223,8 +224,8 @@ def main():
 
         rec = {}
         for arm in ARMS:
-            f = BASE / "results" / tmpl.format(arm=arm)
-            if not f.exists():
+            f = find_table(BASE / "results" / tmpl.format(arm=arm))   # .tsv or .tsv.gz
+            if f is None:
                 continue
             sc = best_scores(f, col, better)
             for acc, r in pos.items():
@@ -235,8 +236,8 @@ def main():
                                 (s >= thr if better == "higher" else s < thr))
         negrec = {}
         for arm in ARMS:
-            f = BASE / "results" / tmpl.format(arm=arm)
-            if not f.exists():
+            f = find_table(BASE / "results" / tmpl.format(arm=arm))   # .tsv or .tsv.gz
+            if f is None:
                 continue
             sc = best_scores(f, col, better)
             for acc, r in negs.items():

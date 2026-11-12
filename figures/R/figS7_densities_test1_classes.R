@@ -9,7 +9,7 @@
 # and D4/D5 Markov decoys. Curves are unfilled because eight populations
 # overplot.
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 

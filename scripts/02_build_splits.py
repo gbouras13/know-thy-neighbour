@@ -35,15 +35,18 @@ Standard library only.
 import argparse
 import gzip
 import json
+import os
 import random
 import re
+import shutil
 import subprocess
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
-MMSEQS = Path.home() / "miniforge3/envs/mmseqs2/bin/mmseqs"
+# mmseqs from $MMSEQS, else PATH.
+MMSEQS = os.environ.get("MMSEQS") or shutil.which("mmseqs") or "mmseqs"
 
 STANDARD_AA = set("ACDEFGHIKLMNPQRSTVWY")
 

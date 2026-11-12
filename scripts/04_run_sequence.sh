@@ -3,7 +3,7 @@
 # (D0-D5 synthetic, D6 natural hard negatives) against the joint reference.
 #
 # Usage:  scripts/04_run_sequence.sh [ARM=small|mid|control] [THREADS=8]
-#         (env REFNAME, default "joint")
+#         (env REFNAME, default "joint"; MMSEQS, default mmseqs on PATH)
 # Inputs: data/queries/${REFNAME}_${ARM}_query.fasta,
 #         data/reference/${REFNAME}_reference.fasta, data/decoys/${ARM}_D*.fasta
 # Output: results/sequence_${ARM}_vs_${REFNAME}.tsv (MMseqs2 tabular; query ids
@@ -21,7 +21,11 @@
 set -euo pipefail
 
 BASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MMSEQS="$HOME/miniforge3/envs/mmseqs2/bin/mmseqs"
+MMSEQS="${MMSEQS:-$(command -v mmseqs || true)}"
+if [[ -z "$MMSEQS" ]] || ! command -v "$MMSEQS" >/dev/null 2>&1; then
+  echo "mmseqs not found: put it on PATH or set MMSEQS=/path/to/mmseqs" >&2
+  exit 1
+fi
 ARM="${1:-small}"
 THREADS="${2:-8}"
 # All length arms search the same reference, so database size (the E-value

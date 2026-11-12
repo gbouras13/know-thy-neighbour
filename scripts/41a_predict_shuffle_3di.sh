@@ -28,7 +28,7 @@ IN="$BASE/data/scope/scope_D2_shuffle_all_tagged.fasta"
 mkdir -p "$OUT"
 
 if [[ ! -s "$IN" ]]; then
-  echo "[in] building tagged shuffle input from the committed decoy FASTAs"
+  echo "[in] building tagged shuffle input from the decoy FASTAs"
   : > "$IN"
   for s in 1 2 3 4 5; do
     f="$BASE/data/scope/scope_D2_shuffle_seed${s}.fasta"

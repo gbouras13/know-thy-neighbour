@@ -20,12 +20,10 @@
 set -euo pipefail
 
 BASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# Prefer foldseek on PATH (e.g. inside a container); fall back to a local
-# conda install.
+# foldseek from $FOLDSEEK, else PATH.
 FOLDSEEK="${FOLDSEEK:-$(command -v foldseek || true)}"
-FOLDSEEK="${FOLDSEEK:-$HOME/miniforge3/envs/foldseek/bin/foldseek}"
-if ! command -v "$FOLDSEEK" >/dev/null 2>&1; then
-  echo "foldseek not found (tried PATH, then $FOLDSEEK)" >&2
+if [[ -z "$FOLDSEEK" ]] || ! command -v "$FOLDSEEK" >/dev/null 2>&1; then
+  echo "foldseek not found: put it on PATH or set FOLDSEEK=/path/to/foldseek" >&2
   exit 1
 fi
 ARM="${1:-small}"

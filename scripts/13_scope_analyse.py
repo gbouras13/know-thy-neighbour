@@ -24,9 +24,11 @@ Run:     python3 scripts/13_scope_analyse.py --results results/scope_sequence.ts
 
 Stdlib only.
 """
-import argparse, gzip, json
+import argparse, json
 from collections import defaultdict
 from pathlib import Path
+
+from tableio import open_table
 
 BASE = Path(__file__).resolve().parent.parent
 BINS = [(20, 60), (61, 100), (101, 150), (151, 250), (251, 400), (401, 10000)]
@@ -40,12 +42,10 @@ def bin_of(L):
 
 
 def smart_open(p):
-    p = Path(p)
-    if p.suffix == ".gz": return gzip.open(p, "rt")
-    if p.exists(): return open(p)
-    gz = p.with_name(p.name + ".gz")
-    if gz.exists(): return gzip.open(gz, "rt")
-    raise SystemExit(f"missing {p}")
+    fh = open_table(p)                       # .tsv or .tsv.gz
+    if fh is None:
+        raise SystemExit(f"missing {p}")
+    return fh
 
 
 def main():

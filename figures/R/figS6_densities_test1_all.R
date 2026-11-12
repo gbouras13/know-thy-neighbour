@@ -9,7 +9,7 @@
 # per query, all three length arms pooled. Foldseek shows two of the three
 # classes: its D6 negatives were searched, but synthetic decoys were not.
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 

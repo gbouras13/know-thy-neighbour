@@ -34,7 +34,7 @@ Transforms, in increasing aggressiveness:
           As applied by Lu et al. (Patterns 2025) to ESMFold latents; much
           cheaper than full ZCA (no d x d matrix).
   whiten  center, then rescale by the inverse square root of the (shrunk)
-          covariance; see --shrink (the shrinkage ablation is Table S4)
+          covariance; see --shrink (the supplementary shrinkage ablation)
 
 mu and the PCA/whitening transforms are fitted on the reference set only.
 Fitting on queries and decoys would use test-set information and pull the mean
@@ -165,7 +165,9 @@ def main():
                     help="override the output suffix. Existing outputs are "
                          "never overwritten (a re-run skips), so use this for "
                          "variants, "
-                         "e.g. --transform whiten --shrink 0 --suffix whiten_raw")
+                         "e.g. --transform whiten --suffix whiten_shrunk for "
+                         "the shrinkage variant next to exact ZCA (--shrink 0, "
+                         "suffix whiten)")
     ap.add_argument("--shrink", type=float, default=None,
                     help="covariance shrinkage for --transform whiten; "
                          "default d/n capped at 0.5, 0 disables")

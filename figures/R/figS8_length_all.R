@@ -9,7 +9,7 @@
 # ESM family) to keep each panel readable; the two metrics are rows. All bins
 # use the same pooled threshold.
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 

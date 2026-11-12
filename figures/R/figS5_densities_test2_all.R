@@ -8,7 +8,7 @@
 # Foldseek and ProstT5-Foldseek show no shuffle class: shuffled sequences have
 # no structures.
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 source(file.path(PROJ, "figures", "R", "helpers_test2_density.R"))

@@ -14,19 +14,19 @@ Run:    python scripts/27_figure_data.py [--skip-slow]
 Sources, so every number can be traced back:
   Test 1 point estimates + intervals   results/bootstrap_test1.txt  (25_)
   Test 2 matched-FPR + AUROC           recomputed here from the kNN tables
-  ceiling vs delivered                 recomputed here (same logic as 19_)
+  ceiling vs delivered                 recomputed here
   length strata                        results/stratified_recovery.txt (17_)
   hubness, kNN methods                 results/hubness.tsv (26_)
   hubness, alignment arms              results/hubness_alignment.tsv (43_)
-  centrality                           results/anisotropy_*.json (18_ --diagnostic)
 
 Stdlib only.
 """
 
-import gzip
 import json
 import re
 from pathlib import Path
+
+from tableio import open_table
 
 BASE = Path(__file__).resolve().parent.parent
 OUT = BASE / "figures/data"
@@ -55,13 +55,7 @@ FAMILY = {
 
 
 def smart(p):
-    p = Path(p)
-    if p.suffix == ".gz" and p.exists():
-        return gzip.open(p, "rt")
-    if p.exists():
-        return open(p)
-    g = p.with_name(p.name + ".gz")
-    return gzip.open(g, "rt") if g.exists() else None
+    return open_table(p)                     # .tsv or .tsv.gz, else None
 
 
 def write_csv(name, cols, rows):
@@ -293,46 +287,6 @@ def main():
                 "kept": round(100 * r["kept"], 1),
                 "auroc": round(r["auroc"], 4)} for r in t2])
 
-    # ---- Scale vs delivered TPR, raw vs whitened (not in the paper) -------
-    scale = []
-    for k, name in disp.items():
-        fam = ("ESM-2" if k.startswith("esm2") else
-               "ESM-C" if k.startswith("esmc") else
-               "Ankh" if k.startswith("ankh") else None)
-        if fam is None:
-            continue
-        _, params = FAMILY.get(name, (None, None))
-        for t in ("none", "whiten"):
-            r = next((x for x in t2 if x["method"] == name
-                      and x["transform"] == t), None)
-            if r:
-                scale.append({"series": fam, "method": name, "params_m": params,
-                              "transform": t,
-                              "delivered": round(100 * r["delivered"], 2),
-                              "top1": round(100 * r["top1"], 2)})
-    write_csv("fig5_scale.csv",
-              ["series", "method", "params_m", "transform", "delivered", "top1"],
-              sorted(scale, key=lambda r: (r["series"], r["params_m"] or 0)))
-
-    # ---- ProstT5, one model two pipelines (not in the paper) -------------
-    p_rows = []
-    pooled_t2 = next((r for r in t2 if r["method"] == "ProstT5 kNN"
-                      and r["transform"] == "none"), None)
-    fold_t2 = next((r for r in t2 if r["method"] == "ProstT5-Foldseek"
-                    and r["transform"] == "none"), None)
-    b_pool, b_fold = boot.get("ProstT5 kNN"), (boot.get("ProstT5-Foldseek") or boot.get("Foldseek C'"))
-    for label, t1b, t2r in [("pooled embedding + cosine kNN", b_pool, pooled_t2),
-                            ("3Di -> Foldseek + E-value", b_fold, fold_t2)]:
-        if t1b:
-            p_rows.append({"pipeline": label, "benchmark": "Test 1 (Swiss-Prot)",
-                           "tpr": t1b["tpr"], "lo": t1b["lo"], "hi": t1b["hi"]})
-        if t2r:
-            p_rows.append({"pipeline": label, "benchmark": "Test 2 (SCOPe)",
-                           "tpr": round(100 * t2r["delivered"], 2),
-                           "lo": None, "hi": None})
-    write_csv("fig3_prostt5.csv",
-              ["pipeline", "benchmark", "tpr", "lo", "hi"], p_rows)
-
     # ---- Fig. 2 / Fig. S1: score densities --------------------------------
     # Best score per query, real remote answerables vs D6 vs D2. Subsampled: a density needs a few thousand
     # points, not a few million, and the CSV has to stay openable.
@@ -494,137 +448,6 @@ def main():
                       ["bin", "n_pos", "n_neg", "method", "tpr", "fpr"], rows4)
         except StopIteration:
             print("  fig4_length.csv            [no '=== length ===' block]")
-
-    # ---- E-value calibration (not in the paper) ---------------------------
-    # Promised vs observed false-positive rate for the two arms that have a
-    # null model: a positive control showing what a calibrated score looks
-    # like. On the diagonal is calibrated; below it is conservative.
-    # Foldseek on real structures is deliberately absent: it searched real
-    # queries and D6 only, so it cannot be calibrated against synthetic decoys
-    # (unsearched negatives would count as non-hits and look perfectly
-    # calibrated).
-    calib_specs = [("sequence (MMseqs2)", "calib_{arm}_mmseqs_joint.tsv"),
-                   ("ProstT5-Foldseek (ProstT5 3Di)", "calib_{arm}_struct_cprime.tsv")]
-    s1 = []
-    for name, tmpl in calib_specs:
-        for arm in ("small", "mid", "control"):
-            fh = smart(BASE / "results" / tmpl.format(arm=arm))
-            if fh is None:
-                continue
-            with fh:
-                hdr = fh.readline().rstrip("\n").split("\t")
-                idx = {c: i for i, c in enumerate(hdr)}
-                for line in fh:
-                    p_ = line.rstrip("\n").split("\t")
-                    if len(p_) < len(hdr):
-                        continue
-                    try:
-                        promised = float(p_[idx["promised_e"]])
-                        observed = float(p_[idx["observed_rate"]])
-                        n = int(p_[idx["n"]])
-                        hits = int(p_[idx["n_hits"]])
-                    except (ValueError, KeyError):
-                        continue
-                    s1.append({"method": name, "arm": arm,
-                               "length_bin": p_[idx["length_bin"]],
-                               "decoy_class": p_[idx["decoy_class"]],
-                               "promised_e": promised, "observed_rate": observed,
-                               "ratio": (observed / promised if promised else None),
-                               "n_hits": hits, "n": n})
-    write_csv("figS1_calibration.csv",
-              ["method", "arm", "length_bin", "decoy_class", "promised_e",
-               "observed_rate", "ratio", "n_hits", "n"], s1)
-
-    # ---- AUROC grids (not in the paper) -----------------------------------
-    # Test 1 AUROCs are integrated here from the saved ROC curves.
-    def auroc_from_curve(pts):
-        """Trapezoid over (fpr, tpr), closing the curve at (1, 1)."""
-        pts = sorted(pts)
-        a = px = py = 0.0
-        for x, y in pts:
-            a += (x - px) * (y + py) / 2
-            px, py = x, y
-        return a + (1 - px) * (1 + py) / 2
-
-    roc_disp = {"esm2_150m": "ESM-2 150M", "esm2_650m": "ESM-2 650M",
-                "esm2_3b": "ESM-2 3B", "esmc_300m": "ESM-C 300M",
-                "esmc_600m": "ESM-C 600M", "esmc_6b": "ESM-C 6B",
-                "ankh_base": "Ankh-base", "ankh_large": "Ankh-large",
-                "prott5": "ProtT5", "prostt5": "ProstT5",
-                "glm2_650m_embed": "gLM2-embed", "prottucker": "ProtTucker/EAT"}
-    s3 = []
-    for f in sorted((BASE / "results").glob("roc_*.tsv")):
-        m = re.match(r"roc_(small|mid|control)_(.+)\.tsv$", f.name)
-        if not m:
-            continue
-        arm, tail = m.group(1), m.group(2)
-        transform = "none"
-        if tail.startswith("knn_"):
-            key = tail[4:]
-            for t in ("center", "diag", "abtt", "whiten"):
-                if key.endswith("_" + t):
-                    key, transform = key[: -(len(t) + 1)], t
-                    break
-            name = roc_disp.get(key)
-            if name is None:
-                continue
-        elif tail == "mmseqs_joint":
-            name = "sequence (MMseqs2)"
-        elif tail == "struct_cprime":
-            name = "ProstT5-Foldseek"
-        elif tail in ("struct_c", "struct_cn"):
-            name = "Foldseek"
-        else:
-            continue                       # other builds (comb, seqcheck)
-        groups = {}
-        with open(f) as fh:
-            fh.readline()
-            for line in fh:
-                p_ = line.rstrip("\n").split("\t")
-                if len(p_) < 7:
-                    continue
-                try:
-                    groups.setdefault((p_[0], p_[1]), {"pts": [], "np": int(p_[5]),
-                                                       "nn": int(p_[6])})["pts"].append(
-                        (float(p_[4]), float(p_[3])))
-                except ValueError:
-                    continue
-        for (lb, dc), g in groups.items():
-            if not g["pts"] or g["np"] < 5 or g["nn"] < 5:
-                continue
-            s3.append({"benchmark": "Test 1 (Swiss-Prot)", "method": name,
-                       "transform": transform, "arm": arm, "length_bin": lb,
-                       "decoy_class": dc, "auroc": round(auroc_from_curve(g["pts"]), 4),
-                       "n_pos": g["np"], "n_neg": g["nn"]})
-    # Test 2 AUROCs are already computed above; append them in the same shape.
-    for r in t2:
-        s3.append({"benchmark": "Test 2 (SCOPe)", "method": r["method"],
-                   "transform": r["transform"], "arm": "scope",
-                   "length_bin": "all", "decoy_class": "different fold",
-                   "auroc": round(r["auroc"], 4), "n_pos": r["n_pos"],
-                   "n_neg": r["n_fold"]})
-    write_csv("figS3_auroc.csv",
-              ["benchmark", "method", "transform", "arm", "length_bin",
-               "decoy_class", "auroc", "n_pos", "n_neg"], s3)
-
-    # ---- Centrality to the embedding mean (not in the paper) -------------
-    cent = []
-    for f in sorted((BASE / "results").glob("anisotropy_*.json")):
-        m = re.match(r"anisotropy_(small|scope)_(.+)\.json", f.name)
-        if not m:
-            continue
-        bench = "Test 1 (small arm)" if m.group(1) == "small" else "Test 2 (SCOPe)"
-        for r in json.loads(f.read_text()):
-            cls = r["class"]
-            kind = ("reference" if cls == "REFERENCE" else
-                    "real query" if cls == "real" else "synthetic decoy")
-            cent.append({"model": m.group(2), "benchmark": bench,
-                         "class": cls, "kind": kind, "n": r["n"],
-                         "median_cos_to_mean": round(r["median_cos_to_mean"], 5),
-                         "median_dist_to_mean": round(r["median_dist_to_mean"], 4)})
-    write_csv("figS4_centrality.csv",
-              ["model", "benchmark", "class", "kind", "n",
-               "median_cos_to_mean", "median_dist_to_mean"], cent)
 
     # ---- Fig. S5: hubness ------------------------------------------------
     export_hubness()

@@ -12,7 +12,7 @@
 # denominators too, so no arm is charged for true positives absent from its
 # own database.
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 

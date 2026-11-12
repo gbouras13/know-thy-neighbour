@@ -20,6 +20,8 @@ Run:     python3 scripts/15_scope_compare.py [--target-fpr 0.01]
 import argparse, gzip, json
 from pathlib import Path
 
+from tableio import find_table
+
 BASE = Path(__file__).resolve().parent.parent
 S = BASE / "data/scope"
 
@@ -112,11 +114,9 @@ def main():
     print(f"{'method':<24}{'TP@1%FPR':>10}{'AUROC':>9}{'thr':>12}{'ambig':>8}")
     print("-" * 63)
     for name, path, col, better, header in methods:
-        p = BASE / path
-        if not p.exists():
-            p = p.with_name(p.name + ".gz")
-            if not p.exists():
-                print(f"{name:<24}{'[pending]':>10}"); continue
+        p = find_table(BASE / path)            # .tsv or .tsv.gz
+        if p is None:
+            print(f"{name:<24}{'[pending]':>10}"); continue
         pts = curve(best_hits(p, col, better, header), qry, ref, better)
         if not pts:
             print(f"{name:<24}{'no data':>10}"); continue

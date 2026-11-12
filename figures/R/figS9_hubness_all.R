@@ -27,7 +27,7 @@
 # decoy population excludes the bare D6_natural_hard class. This figure is a
 # measurement only and makes no causal claim.
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 

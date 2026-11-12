@@ -9,7 +9,7 @@
 # per method (E-value vs cosine), so each panel has its own x axis; no single
 # cutoff means the same thing across methods.
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 
@@ -44,5 +44,5 @@ p <- ggplot(d, aes(x = x, fill = class, colour = class)) +
   )
 
 # 6.9 x 4.0 in (about 3.2 in tall at the 5.5 in text width).
-p <- p + theme_nnm(base_size = 10) + theme(legend.position = "top")
+p <- p + theme_ktn(base_size = 10) + theme(legend.position = "top")
 save_fig(p, "fig2_densities", width = 6.9, height = 4.0)

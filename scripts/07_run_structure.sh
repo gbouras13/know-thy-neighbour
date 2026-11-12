@@ -13,14 +13,19 @@
 # Usage:  scripts/07_run_structure.sh [ARM=small|mid|control] [THREADS=8]
 #         (env REFNAME default "joint"; FOLDSEEK, STRUCTDB override paths)
 # Output: results/structure_C_${ARM}.tsv, results/structure_Cprime_${ARM}.tsv,
-#         results/afdb_covered_reference_${ARM}.txt
+#         results/afdb_covered_reference_${ARM}.txt and
+#         results/afdb_covered_reference.txt (same list; the reference is shared)
 #
 # -e is permissive: E-values are recorded, not applied here.
 
 set -euo pipefail
 
 BASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-FOLDSEEK="${FOLDSEEK:-$HOME/miniforge3/envs/foldseek/bin/foldseek}"
+FOLDSEEK="${FOLDSEEK:-$(command -v foldseek || true)}"
+if [[ -z "$FOLDSEEK" ]] || ! command -v "$FOLDSEEK" >/dev/null 2>&1; then
+  echo "foldseek not found: put it on PATH or set FOLDSEEK=/path/to/foldseek" >&2
+  exit 1
+fi
 ARM="${1:-small}"
 THREADS="${2:-8}"
 REFNAME="${REFNAME:-joint}"
@@ -84,6 +89,9 @@ n_ref=$(wc -l < "$WORK/ref_accs.txt")
 n_cov=$(wc -l < "$WORK/ref_covered.txt")
 echo "[cov] reference: $n_cov / $n_ref have an AFDB structure ($((100*n_cov/n_ref))%)"
 cp "$WORK/ref_covered.txt" "$BASE/results/afdb_covered_reference_${ARM}.txt"
+# The reference is shared by all arms, so the covered list is identical for
+# each; 43_hubness_alignment.py reads it under the arm-free name.
+cp "$WORK/ref_covered.txt" "$BASE/results/afdb_covered_reference.txt"
 
 # --- 4. subset the structure DB ----------------------------------------------
 # Subset the aux databases with the SAME key list and --subdb-mode 1 (preserve

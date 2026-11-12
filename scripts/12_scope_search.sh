@@ -10,9 +10,8 @@
 # threshold can be swept post hoc.
 set -euo pipefail
 BASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# mmseqs from $MMSEQS, else PATH, else a conda env fallback.
+# mmseqs from $MMSEQS, else PATH.
 MMSEQS="${MMSEQS:-$(command -v mmseqs || true)}"
-MMSEQS="${MMSEQS:-$HOME/miniforge3/envs/mmseqs2/bin/mmseqs}"
 THREADS="${1:-8}"
 S="$BASE/data/scope"; W="$BASE/data/interim/scope"; mkdir -p "$W"
 
@@ -52,8 +51,8 @@ echo "[info] $(grep -c '^>' "$C") queries vs $(grep -c '^>' "$S/scope_reference.
 # mmseqs is unavailable the search is skipped with a message rather than
 # failing, so the decoys can be generated on their own.
 OUT="$BASE/results/scope_sequence.tsv"
-if ! command -v "$MMSEQS" >/dev/null 2>&1; then
-  echo "[skip] mmseqs not found (tried PATH, then $MMSEQS)."
+if [[ -z "$MMSEQS" ]] || ! command -v "$MMSEQS" >/dev/null 2>&1; then
+  echo "[skip] mmseqs not found (set MMSEQS or put mmseqs on PATH)."
   echo "[skip] decoys are written; sequence baseline must be run where mmseqs exists."
   exit 0
 fi

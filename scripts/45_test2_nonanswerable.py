@@ -143,6 +143,8 @@ def main():
     for k, name in disp.items():
         specs.append((name, f"results/scope_knn_{k}.tsv.gz", 3, "higher", True))
         if k != "prottucker":
+            # _whiten is exact ZCA (18_center.py --shrink 0), as reported in
+            # the paper; the shrinkage variant is _whiten_shrunk.
             specs.append((f"{name} +whiten", f"results/scope_knn_{k}_whiten.tsv.gz",
                           3, "higher", True))
 

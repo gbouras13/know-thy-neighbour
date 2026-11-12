@@ -8,7 +8,7 @@
 # (see scripts/43_test1_top1.py); Test 1 delivered sensitivity does not check
 # correctness. ProtTucker is excluded: it is a supervised head rather than a
 # raw pLM.
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 source(file.path(PROJ, "figures", "R", "helpers_ladder.R"))

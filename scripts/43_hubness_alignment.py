@@ -50,7 +50,7 @@ Two differences from kNN are reported as columns:
        Foldseek          Test 1  289,206 with an AFDB model    Test 2   9,787 with pdbstyle coordinates
        ProstT5-Foldseek  Test 1  289,206 (same AFDB refDB)     Test 2  11,107 (3Di predicted for every domain)
 
-     Sources: results/afdb_covered_reference.txt (written by 07b) and the
+     Sources: results/afdb_covered_reference.txt (written by 07b or 07) and the
      coordinate coverage of the SCOPe set (9,787 of 11,107 reference domains;
      3,720 of 4,069 queries). Test 1 Foldseek searched only queries with an
      AFDB model; n_queries_issued for Foldseek is the issued count in the
@@ -87,6 +87,8 @@ import importlib.util
 import sys
 from collections import Counter
 from pathlib import Path
+
+from tableio import find_table
 
 BASE = Path(__file__).resolve().parent.parent
 K = 50
@@ -314,9 +316,11 @@ def main():
             if sp.get("t1_d6_from_real"):
                 d6 = set(fasta_ids(D / f"{arm}_D6_natural_hard_all.fasta"))
             for path in sp["t1"](arm):
-                if not Path(path).exists():
+                found = find_table(path)             # .tsv or .tsv.gz
+                if found is None:
                     print(f"[{slug}] MISSING {Path(path).relative_to(BASE)}")
                     continue
+                path = found
                 a, dg = process(path, d6)
                 for k in accs:
                     accs[k].add(a[k])
@@ -343,9 +347,11 @@ def main():
         # Test 2
         accs = {"real": Acc(), "decoy": Acc(), "d6": Acc()}
         for path in sp["t2"]:
-            if not Path(path).exists():
+            found = find_table(path)                 # .tsv or .tsv.gz
+            if found is None:
                 print(f"[{slug}] MISSING {Path(path).relative_to(BASE)}")
                 continue
+            path = found
             a, dg = process(path)
             for k in accs:
                 accs[k].add(a[k])
@@ -379,9 +385,11 @@ def main():
             per_arm = {}
             for arm in ARMS:
                 path = BASE / f"results/knn_{arm}_{m}.tsv.gz"
-                if not path.exists():
+                found = find_table(path)             # .tsv or .tsv.gz
+                if found is None:
                     print(f"[{m}] MISSING {path.relative_to(BASE)}")
                     continue
+                path = found
                 a, dg = process(path)
                 a["d6"].issued = issued_t1[arm]["d6"]
                 per_arm[arm] = a

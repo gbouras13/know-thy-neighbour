@@ -6,7 +6,7 @@
 # Output: figures/out/fig6_ladder.{pdf,png}
 # Run:    Rscript figures/R/fig6_ladder.R   (from the repository root)
 
-if (!exists("theme_nnm")) {
+if (!exists("theme_ktn")) {
   source(if (file.exists("00_theme.R")) "00_theme.R" else "figures/R/00_theme.R")
 }
 

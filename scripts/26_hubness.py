@@ -39,10 +39,11 @@ Stdlib only.
 """
 
 import argparse
-import gzip
 import json
 from collections import Counter
 from pathlib import Path
+
+from tableio import open_table
 
 BASE = Path(__file__).resolve().parent.parent
 
@@ -51,13 +52,7 @@ STALE = "D6_natural_hard|"
 
 
 def smart(p):
-    p = Path(p)
-    if p.suffix == ".gz" and p.exists():
-        return gzip.open(p, "rt")
-    if p.exists():
-        return open(p)
-    g = p.with_name(p.name + ".gz")
-    return gzip.open(g, "rt") if g.exists() else None
+    return open_table(p)                     # .tsv or .tsv.gz, else None
 
 
 def k_occurrence(paths, population):

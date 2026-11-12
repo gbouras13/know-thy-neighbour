@@ -27,6 +27,8 @@ import gzip
 import json
 from pathlib import Path
 
+from tableio import find_table
+
 BASE = Path(__file__).resolve().parent.parent
 ARMS = ("small", "mid", "control")
 
@@ -50,10 +52,8 @@ def top1_for(stem_tmpl, ref, q, col=3):
     Queries with no hit at all count as misses, matching every other metric."""
     hit = seen = 0
     for arm in ARMS:
-        p = BASE / stem_tmpl.format(arm=arm)
-        if not p.exists():
-            p = p.with_suffix(".tsv.gz") if p.suffix == ".tsv" else p
-        if not p.exists():
+        p = find_table(BASE / stem_tmpl.format(arm=arm))   # .tsv or .tsv.gz
+        if p is None:
             return None
         op = gzip.open if str(p).endswith(".gz") else open
         best = {}

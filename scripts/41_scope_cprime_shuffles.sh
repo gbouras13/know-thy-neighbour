@@ -17,7 +17,10 @@
 set -euo pipefail
 BASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FOLDSEEK="${FOLDSEEK:-$(command -v foldseek || true)}"
-FOLDSEEK="${FOLDSEEK:-$HOME/miniforge3/envs/foldseek/bin/foldseek}"
+if [[ -z "$FOLDSEEK" ]] || ! command -v "$FOLDSEEK" >/dev/null 2>&1; then
+  echo "foldseek not found: put it on PATH or set FOLDSEEK=/path/to/foldseek" >&2
+  exit 1
+fi
 THREADS="${1:-8}"; MAX_SEQS="${MAX_SEQS:-1000}"
 W="${SCOPE_WORK:-$BASE/data/interim/scope_struct}"; mkdir -p "$W"
 IN="$BASE/data/scope_3di_shuffle"

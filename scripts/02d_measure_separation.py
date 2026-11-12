@@ -27,12 +27,15 @@ Usage: python scripts/02d_measure_separation.py [--prefix joint] [--threads N]
 
 import argparse
 import json
+import os
+import shutil
 import subprocess
 from collections import defaultdict
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
-MMSEQS = Path.home() / "miniforge3/envs/mmseqs2/bin/mmseqs"
+# mmseqs from $MMSEQS, else PATH.
+MMSEQS = os.environ.get("MMSEQS") or shutil.which("mmseqs") or "mmseqs"
 COV_LEVELS = [0.0, 0.3, 0.5, 0.8]
 
 

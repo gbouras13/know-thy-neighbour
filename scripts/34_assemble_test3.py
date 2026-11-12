@@ -9,7 +9,8 @@ long-form CSV (method, arm, level, mean_sens).
 
 The MMseqs2 arm is an all-vs-all search (mmseqs 18.8cc5c, -s 7.5
 --max-seqs 4000 -e 10000 over all 15,176 domains) rescored through
-31_test3_score_tsv.py into `results/test3_common_mmseqs.csv`.
+31_test3_score_tsv.py into `results/test3_common_mmseqs.csv`. The README lists
+the commands for every arm.
 
 Run:  python3 scripts/34_assemble_test3.py [--out figures/data/fig10_test3.csv]
 """
@@ -28,6 +29,8 @@ NAMES = {
     "ankh_base": "Ankh-base", "ankh_large": "Ankh-large",
     "prott5": "ProtT5", "prostt5": "ProstT5", "glm2_650m_embed": "gLM2-embed",
     "prottucker": "ProtTucker/EAT",
+    "Foldseek": "Foldseek", "ProstT5-Foldseek": "ProstT5-Foldseek",
+    # earlier --name labels for the two Foldseek arms
     "Foldseek C (real struct)": "Foldseek",
     "Foldseek C-prime (ProstT5 3Di)": "ProstT5-Foldseek",
     "sequence (MMseqs2)": "sequence (MMseqs2)",
