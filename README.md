@@ -211,6 +211,8 @@ python3 scripts/31_test3_score_tsv.py --hits $T/mmseqs_hits.tsv --name "sequence
     --out results/test3_common_mmseqs.csv --per-query results/test3_perquery_mmseqs.csv
 
 # Foldseek, all versus all, on the databases 16b_scope_build_search.sh built in data/interim/scope_struct
+# The hit cap (--max-seqs 4000) matches the archived Foldseek outputs; -s and -e were not
+# recorded for these two runs, and the values below are permissive settings in line with the MMseqs2 run.
 W=data/interim/scope_struct
 #   C: ASTRAL coordinates (entry names carry a .ent suffix, removed before scoring)
 foldseek search $W/allDB $W/allDB $T/resC $T/tmp_c -s 9.5 -e 10000 --max-seqs 4000
