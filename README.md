@@ -21,7 +21,7 @@ figures/data/     the tidy CSVs every figure is drawn from
 requirements.txt  Python dependencies
 ```
 
-Raw data, embeddings and intermediate results are too large for git. They are archived on Zenodo (DOI to be added) with the layout described under [Data layout](#data-layout).
+Raw data, embeddings and intermediate results are too large for git. They are archived on Zenodo at [doi:10.5281/zenodo.24181855](https://doi.org/10.5281/zenodo.24181855) with the layout described under [Data layout](#data-layout).
 
 ## Requirements
 
@@ -240,7 +240,7 @@ python3 scripts/37_test3_cdf.py                      # results/test3_perquery_*.
 
 ## Data layout
 
-The Zenodo record holds two archives. Unpack both in the repository root:
+The [Zenodo record](https://doi.org/10.5281/zenodo.24181855) holds two archives (MD5 `7bc02dd65b5072a48f26a5b3e6a981b8` and `03eeb71cf94bb50540016b585ae2c640`). Unpack both in the repository root:
 
 ```bash
 tar -xzf know-thy-neighbour_data.tar.gz        # data/ (except embeddings) and results/
